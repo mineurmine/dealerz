@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tirage de cartes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tapis: #1f4d3a;
+    --tapis-fonce: #163a2b;
+    --texte: #f3efe4;
+    --normal: #f3efe4;
+    --fumer: #8a8f96;
+    --alcool: #b8872b;
+    --sam: #3b7dd8;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: radial-gradient(ellipse at center, var(--tapis) 0%, var(--tapis-fonce) 100%);
+    background-color: var(--tapis-fonce);
+    color: var(--texte);
+    font-family: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    min-height: 100vh;
+  }
+  main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  h1 {
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    font-weight: 400;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    line-height: 1;
+    margin: 0 0 1.5rem;
+    text-align: center;
+    letter-spacing: 0.01em;
+  }
+
+  /* Zone où la carte tirée s'affiche */
+  .table {
+    display: grid;
+    place-items: center;
+    min-height: min(540px, 72vh);
+    margin-bottom: 2rem;
+    perspective: 1200px;
+  }
+  .carte {
+    /* format des cartes : 639 x 1039 px */
+    width: min(320px, 78vw, calc(68vh * 639 / 1039));
+    aspect-ratio: 639 / 1039;
+    border-radius: 14px;
+    background: rgba(0,0,0,.18);
+    border: 2px dashed rgba(243,239,228,.3);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 1rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .carte.pleine {
+    border: none;
+    background: #fff;
+    padding: 0;
+    box-shadow: 0 0 0 6px var(--couleur, var(--normal)), 0 18px 40px rgba(0,0,0,.45);
+  }
+  .carte img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .carte .manque { color: #333; padding: 1rem; font-size: .95rem; }
+  .carte .vide { opacity: .7; }
+  .anime { animation: retourne .45s ease-out; }
+  @keyframes retourne {
+    from { transform: rotateY(90deg) translateY(-20px); opacity: .3; }
+    to   { transform: rotateY(0) translateY(0); opacity: 1; }
+  }
+  .legende { margin-top: .9rem; text-align: center; min-height: 1.4em; }
+
+  /* Les 4 paquets */
+  .paquets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 700px) { .paquets { grid-template-columns: repeat(2, 1fr); } }
+
+  .paquet { display: flex; flex-direction: column; align-items: stretch; gap: .5rem; }
+  .paquet button.tirer {
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    font-size: 1.15rem;
+    padding: 1.4rem .5rem;
+    border: none;
+    border-radius: 12px;
+    background: var(--couleur);
+    color: var(--encre, #1b1b1b);
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,.35), 4px 9px 0 -2px var(--couleur), 8px 13px 0 -4px var(--couleur);
+    transition: transform .1s;
+  }
+  .paquet button.tirer:active { transform: translateY(3px); }
+  .paquet button.tirer:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+  .paquet button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .infos { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; margin-top: .6rem; }
+  .paquet button.melanger {
+    background: none; border: 1px solid rgba(243,239,228,.45); color: var(--texte);
+    border-radius: 6px; padding: .2rem .5rem; font: inherit; font-size: .8rem; cursor: pointer;
+  }
+
+  .normal { --couleur: var(--normal); }
+  .fumer  { --couleur: var(--fumer); }
+  .alcool { --couleur: var(--alcool); }
+  .sam    { --couleur: var(--sam); --encre: #fff; }
+
+  .tout { display: block; margin: 2rem auto 0; background: none; color: var(--texte);
+    border: 1px solid rgba(243,239,228,.45); border-radius: 8px; padding: .6rem 1rem; font: inherit; cursor: pointer; }
+
+  @media (prefers-reduced-motion: reduce) { .anime { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>À toi de piocher</h1>
+
+  <section class="table">
+    <div>
+      <div id="carte" class="carte"><span class="vide">Choisis un paquet pour tirer une carte</span></div>
+      <p id="legende" class="legende"></p>
+    </div>
+  </section>
+
+  <section class="paquets" id="paquets"></section>
+  <button class="tout" id="tout">Remélanger tous les paquets</button>
+</main>
+
+<script>
+/* ===== CONFIGURATION =====
+   dossier : nom du dossier à côté de ce fichier
+   nombre  : nombre d'images (nommées 1.png, 2.png, 3.png...)            */
+const PAQUETS = [
+  { id: "normal", nom: "Normale",  dossier: "normal", nombre: 79 },
+  { id: "fumer",  nom: "Fumer",    dossier: "fumer",  nombre: 20 },
+  { id: "alcool", nom: "Alcool",   dossier: "alcool", nombre: 20 },
+  { id: "sam",    nom: "Sam",      dossier: "sam",    nombre: 20 },
+];
+const EXTENSION = ".png";
+/* ========================= */
+
+const etat = {};
+const zone = document.getElementById("paquets");
+const carte = document.getElementById("carte");
+const legende = document.getElementById("legende");
+
+function melanger(p) {
+  const liste = Array.from({ length: p.nombre }, (_, i) => i + 1);
+  for (let i = liste.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [liste[i], liste[j]] = [liste[j], liste[i]];
+  }
+  etat[p.id] = liste;
+  majCompteur(p);
+}
+
+function majCompteur(p) {
+  const reste = etat[p.id].length;
+  document.getElementById("reste-" + p.id).textContent = reste + " / " + p.nombre;
+  document.getElementById("btn-" + p.id).disabled = reste === 0;
+}
+
+function tirer(p) {
+  const num = etat[p.id].pop();
+  if (num === undefined) return;
+  majCompteur(p);
+
+  const chemin = p.dossier + "/" + num + EXTENSION;
+  carte.className = "carte pleine " + p.id;
+  carte.innerHTML = "";
+  const img = document.createElement("img");
+  img.alt = p.nom + " n°" + num;
+  img.src = chemin;
+  img.onerror = () => {
+    carte.innerHTML = '<p class="manque">Image introuvable :<br><strong>' + chemin +
+      '</strong><br><br>Vérifie que le fichier existe à côté de index.html.</p>';
+  };
+  carte.appendChild(img);
+  void carte.offsetWidth;
+  carte.classList.add("anime");
+
+  const reste = etat[p.id].length;
+  legende.textContent = p.nom + " — carte " + num + (reste === 0 ? " (paquet vide)" : "");
+}
+
+PAQUETS.forEach(p => {
+  const div = document.createElement("div");
+  div.className = "paquet " + p.id;
+  div.innerHTML =
+    '<button class="tirer" id="btn-' + p.id + '">' + p.nom + '</button>' +
+    '<div class="infos"><span id="reste-' + p.id + '"></span>' +
+    '<button class="melanger" id="mel-' + p.id + '">Remélanger</button></div>';
+  zone.appendChild(div);
+  document.getElementById("btn-" + p.id).onclick = () => tirer(p);
+  document.getElementById("mel-" + p.id).onclick = () => melanger(p);
+  melanger(p);
+});
+
+document.getElementById("tout").onclick = () => {
+  PAQUETS.forEach(melanger);
+  carte.className = "carte";
+  carte.innerHTML = '<span class="vide">Choisis un paquet pour tirer une carte</span>';
+  legende.textContent = "";
+};
+</script>
+</body>
+</html>
