@@ -328,6 +328,84 @@
     .zoom img { border-radius: 18px; }
   }
 
+
+  /* ---------- Bouton Règles ---------- */
+  .btn-regles {
+    border: none; background: var(--panneau); cursor: pointer;
+    border-radius: 999px; padding: .5rem .85rem; font-weight: 700; font-size: .85rem;
+  }
+
+  /* ---------- Panneau Règles / Infos ---------- */
+  .regles {
+    position: fixed; inset: 0; z-index: 20;
+    background: rgba(5,15,10,.75);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .regles-boite {
+    background: #f3efe4;
+    color: #1e2a24;
+    width: 100%;
+    max-width: 760px;
+    height: 92%;
+    border-radius: 20px 20px 0 0;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.4);
+    animation: monte .3s ease-out;
+  }
+  @keyframes monte { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .regles-tete {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .9rem 1rem .6rem;
+    border-bottom: 1px solid rgba(30,42,36,.12);
+  }
+  .onglets { display: flex; gap: .3rem; flex: 1; }
+  .onglet {
+    border: none; background: none; cursor: pointer;
+    padding: .5rem .9rem; border-radius: 999px; font-weight: 700; color: #1e2a24; opacity: .6;
+  }
+  .onglet[aria-selected="true"] { background: #1e2a24; color: #f3efe4; opacity: 1; }
+  .fermer {
+    width: 2.3rem; height: 2.3rem; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(30,42,36,.08); color: #1e2a24; font-size: 1.3rem; line-height: 1;
+  }
+  .regles-corps {
+    overflow-y: auto; flex: 1;
+    padding: 1rem 1.2rem calc(env(safe-area-inset-bottom, 0px) + 2rem);
+    line-height: 1.5;
+    font-size: .95rem;
+  }
+  .regles-corps h2 {
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    font-weight: 400; font-size: 1.5rem; line-height: 1.15; margin: .2rem 0 1rem;
+  }
+  .regles-corps h3 { font-size: 1.05rem; margin: 1.6rem 0 .4rem; padding-top: 1rem; border-top: 1px solid rgba(30,42,36,.12); }
+  .regles-corps h4 { font-size: .95rem; margin: 1rem 0 .3rem; display: flex; align-items: center; gap: .45rem; }
+  .regles-corps h4::before { content: ""; width: .6rem; height: .9rem; border-radius: 2px; background: var(--couleur, #1e2a24); }
+  .regles-corps ul { margin: .2rem 0 .6rem; padding-left: 1.2rem; }
+  .regles-corps li { margin: .1rem 0; }
+  .regles-corps p { margin: .3rem 0 .6rem; }
+  .regles-corps .note { color: rgba(30,42,36,.7); font-size: .9rem; }
+  .zones { display: grid; grid-template-columns: auto 1fr; gap: .25rem .8rem; margin: .4rem 0 .8rem; }
+  .zones b { font-family: "Bowlby One", Impact, sans-serif; font-weight: 400; }
+  .regles-corps .fumer h4::before, .regles-corps h4.fumer::before { background: var(--fumer); }
+  .regles-corps h4.alcool::before { background: var(--alcool); }
+  .regles-corps h4.sam::before { background: var(--sam); }
+
+  .infos { text-align: center; padding-top: 2rem; }
+  .infos .signature { font-family: "Bowlby One", Impact, "Arial Black", sans-serif; font-size: 1.8rem; margin: .2rem 0 1.4rem; }
+  .infos .role { text-transform: none; color: rgba(30,42,36,.65); font-weight: 600; margin: 0; }
+
+  @media (min-width: 900px) {
+    .btn-regles { border-radius: 10px; background: none; border: 1px solid rgba(243,239,228,.4); padding: .55rem 1rem; font-size: 1rem; font-weight: 400; }
+    .btn-regles:hover { background: rgba(255,255,255,.06); }
+    .regles { align-items: center; padding: 2rem; }
+    .regles-boite { height: 100%; max-height: 860px; border-radius: 20px; }
+    .regles-corps { padding: 1.5rem 2.2rem 2.5rem; font-size: 1rem; }
+    .regles-corps h2 { font-size: 1.9rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { .regles-boite { animation: none; } }
+
   /* PC un peu étroit : on cache l'historique */
   @media (min-width: 900px) and (max-width: 1100px) {
     .table {
@@ -352,6 +430,7 @@
   <header>
     <h1 id="titre">Prêt ?</h1>
     <div class="stocks" id="stocks"></div>
+    <button class="btn-regles" id="ouvrirRegles">Règles</button>
     <button class="reset" id="reset" aria-label="Nouvelle partie" title="Nouvelle partie">
       <span class="txt-mobile" aria-hidden="true">↻</span><span class="txt-pc">Nouvelle partie</span>
     </button>
@@ -384,6 +463,152 @@
       <ol id="historique"><li class="vide">Aucun tour joué</li></ol>
     </aside>
   </main>
+</div>
+
+
+<div class="regles" id="regles" hidden>
+  <div class="regles-boite" role="dialog" aria-modal="true" aria-label="Règles du jeu">
+    <div class="regles-tete">
+      <div class="onglets" role="tablist">
+        <button class="onglet" role="tab" id="tab-regles" aria-selected="true" data-cible="contenu-regles">Règles</button>
+        <button class="onglet" role="tab" id="tab-infos" aria-selected="false" data-cible="contenu-infos">Infos</button>
+      </div>
+      <button class="fermer" id="fermerRegles" aria-label="Fermer">×</button>
+    </div>
+
+    <div class="regles-corps" id="contenu-regles">
+      <h2>Transcription des documents de jeu</h2>
+      <p><strong>Objectif :</strong> être le premier joueur à obtenir 10pt de livraison</p>
+
+      <h3>Cartes pénalités : (70)</h3>
+
+      <h4 class="alcool">Alcool : (20)</h4>
+      <ul>
+        <li>1 gorgé</li><li>2 g</li><li>3 g</li><li>4 g</li><li>5 g</li>
+        <li>Cul sec</li>
+        <li>Distribue 1 gorgé</li><li>D 2 g</li><li>D 5 g</li><li>D 1 cul sec</li>
+        <li>Distribue autant de gorgées qu'il y a de joueurs</li>
+        <li>Dame des putes buveur (5 t b)</li>
+      </ul>
+
+      <h4 class="fumer">Bedo : (20)</h4>
+      <ul>
+        <li>3 taff</li><li>5 t</li><li>8 t</li>
+        <li>3 taff retenues 3 sec</li><li>5 taff r 5 sec</li>
+        <li>Colère 5 taff</li><li>C 10 t</li>
+        <li>Prend 1 Soufflette</li><li>Donne 1 soufflette</li>
+        <li>Distribue 5 taff</li><li>D 8 t</li>
+        <li>Rouleur assigné + Dame des putes f gratteur (5 t f)</li>
+      </ul>
+
+      <h4 class="sam">SAM : (30)</h4>
+      <ul>
+        <li>10 pompes p</li><li>10 p d</li>
+        <li>30 sec gainage p</li><li>30 s g d</li>
+        <li>1 action ou vérité (prends uniquement)</li>
+        <li>1 action pu</li><li>1 vérité pu</li><li>2 action pu</li><li>2 vérités pu</li>
+        <li>Retire 1 fringues</li><li>Retire 2 fringues</li><li>R 3 f</li>
+        <li>Pouilleux massa pour 10 cartes</li><li>P m pr 15 cartes</li>
+        <li>Appelle un ex (trouve une excuse)</li>
+        <li>Cimetière sobre p</li><li>Cimetière sobre d</li>
+        <li>Joue debout 8 tours de joueurs</li>
+      </ul>
+
+      <h3>Fournisseurs : 3</h3>
+      <ul>
+        <li>Un lieu alcool (carrefour)</li>
+        <li>Un lieu weed (parc)</li>
+        <li>Un lieu puff (collège)</li>
+      </ul>
+      <p class="note">Achat possible sur place à tout moment</p>
+
+      <h3>Items de duel</h3>
+      <p>À jouer (envoie des cartes pénalités) ou conserver (pr duel)</p>
+      <ul>
+        <li>Épée bois (valeur 1)</li>
+        <li>E minerais (2)
+          <ul><li>Pierre (2.1)</li><li>Fer (2.2)</li><li>Or (2.3)</li></ul>
+        </li>
+        <li>E diamant (3)</li>
+        <li>Bouclier bois (durabilité 1)</li>
+        <li>B fer (2)</li>
+      </ul>
+
+      <h3>Items fidélité (pr clients)</h3>
+      <ul>
+        <li>Briquet</li><li>Slim</li><li>Shots</li><li>Citrons</li><li>Fiole de gout</li><li>Résistances</li>
+      </ul>
+
+      <h3>Badge de défi : (I ; II ; III ; IV ; V)</h3>
+      <p>Valable jsq défaite du porteur du badge, le gagnant prend le jeton</p>
+
+      <h3>Cases jumelles duel : (5x2)</h3>
+
+      <h3>Cases objet trouvés : (15)</h3>
+      <ul>
+        <li>Une carte drop : 1 (70%) / 2 (30%) items fidélité</li>
+        <li>+ 1 items livraison (% de chance dépend des condé)</li>
+        <li>+ ⅓ chance items guerrier</li>
+        <li>+ ⅙ chance pénalité</li>
+      </ul>
+
+      <h3>Monnaie du jeu</h3>
+      <p>Les dilars (10, 20, 50, 100)</p>
+
+      <h3>Pt stratégique : (1)</h3>
+      <p><strong>Le Marly :</strong> paie 10 dealar pour une caisse d'items aléatoire (contient : 1 (10%) ; 2 (20%) ; 3 (40%) ; 4 (20%) ; 5 (10%) d'items fidélité)</p>
+      <h4>Cases fournisseurs : (3)</h4>
+      <p>Le collège, carrefour, parc</p>
+      <h4>Cases commandes : (3 Jaune complet)</h4>
+      <p>1 carte commande par visite<br>+ 1 par visite de pt de deal</p>
+
+      <h3>Cartes livraison (/commande) : (bcp)</h3>
+      <p>1 à 3 pts de livraison (commandes dbl et trpl), face cachée, donne 1 case client (sur la map)</p>
+      <p>Nb de carte inachevée max : 5 en main</p>
+      <p><strong>Nb de points nécessaires pour gagner : 10</strong></p>
+
+      <h3>Points de deal : 8</h3>
+      <p class="note">Zones de livraison des clients</p>
+      <div class="zones">
+        <b>A</b><span>Place Anne Franck</span>
+        <b>B</b><span>Bastille</span>
+        <b>C</b><span>La Cave</span>
+        <b>D</b><span>Chez le doc</span>
+        <b>E</b><span>L'Étoile</span>
+        <b>F</b><span>Au Franprix</span>
+        <b>G</b><span>Au Garage</span>
+        <b>H</b><span>Chez tonton</span>
+        <b>J</b><span>Place du jeu de paume (case départ)</span>
+      </div>
+
+      <h3>Condés : (2 voitures)</h3>
+      <p>Déplaçable par les joueurs si : carte jeu (5 cases strictes) ; pas d'item illégaux sur soi et passe par case condé (entre 5 et 10 cases)</p>
+      <h4>Variante incarne un condé</h4>
+      <p>But : mettre tous les joueurs sur écoute (en trouvant 3 preuves par dealer : caméra sur pt de deal, perquiz, alliance avec poucave)</p>
+      <p><strong>Poucave :</strong> peut échanger ses preuves avec les condés contre preuves d'autres dealers</p>
+      <p>Si un joueur croise un condé, le condé réquisitionne tous ses items illégaux</p>
+
+      <h3>Au commencement du jeu</h3>
+      <p>Chaque joueur commence avec le stuff qu'il a dans les poches (un briquet réel = un item briquet, une 20 = un item livraison 20 de weed) + 420 dilars (100x1, 50x4, 20x4, 10x4) + une carte livraison</p>
+      <p>Les SAMs peuvent commencer à une case fournisseur (bha gros ils ont la caisse)</p>
+
+      <h3>Cartes jeu : (100)</h3>
+      <ul>
+        <li>1 × Déplacement (20% de 4 ; 5 ; 6 ; 7 ; 8 cases)</li>
+        <li>¼ × item combat</li>
+        <li>⅓ × déplacement condé</li>
+        <li>⅙ × pioche 1 carte items fidélité</li>
+        <li>¼ × pioche 1 carte pénalité<br>/ ⅒ × pioche 2 cartes pénalités</li>
+      </ul>
+    </div>
+
+    <div class="regles-corps infos" id="contenu-infos" hidden>
+      <p class="role">Créateur</p>
+      <p class="signature">l'4rcange</p>
+      <p class="role">Développement</p>
+      <p class="signature">3DP</p>
+    </div>
+  </div>
 </div>
 
 <div class="zoom" id="zoom" hidden><img id="zoomImg" alt=""></div>
@@ -565,8 +790,26 @@ document.addEventListener("click", e => {
 });
 $("zoom").onclick = fermerZoom;
 
+
+/* ---- Règles / Infos ---- */
+function ouvrirRegles() { $("regles").hidden = false; $("fermerRegles").focus(); }
+function fermerRegles() { $("regles").hidden = true; $("ouvrirRegles").focus(); }
+$("ouvrirRegles").onclick = ouvrirRegles;
+$("fermerRegles").onclick = fermerRegles;
+$("regles").addEventListener("click", e => { if (e.target.id === "regles") fermerRegles(); });
+document.querySelectorAll(".onglet").forEach(o => {
+  o.onclick = () => {
+    document.querySelectorAll(".onglet").forEach(x => {
+      const actif = x === o;
+      x.setAttribute("aria-selected", actif);
+      $(x.dataset.cible).hidden = !actif;
+    });
+  };
+});
+
 /* ---- Raccourcis clavier (PC) ---- */
 document.addEventListener("keydown", e => {
+  if (!$("regles").hidden) { if (e.key === "Escape") fermerRegles(); return; }
   if (!$("zoom").hidden) { fermerZoom(); return; }
   if (e.key === " " || e.key === "Enter") {
     if (e.key === "Enter" && document.activeElement && document.activeElement.tagName === "BUTTON") return;
