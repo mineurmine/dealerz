@@ -3,154 +3,424 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#163a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Tirage de cartes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+  /* =====================================================
+     Base commune (téléphone d'abord, puis PC à partir de 900 px)
+     ===================================================== */
   :root {
-    --tapis: #1f4d3a;
-    --tapis-fonce: #163a2b;
+    --tapis: #235a44;
+    --tapis-fonce: #10301f;
+    --panneau: rgba(0,0,0,.22);
     --texte: #f3efe4;
+    --texte-doux: rgba(243,239,228,.7);
     --normal: #f3efe4;
     --fumer: #8a8f96;
-    --alcool: #b8872b;
+    --alcool: #c9952f;
     --sam: #3b7dd8;
-    box-sizing: border-box;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --ratio: 639 / 1039;
+    --dock: 150px;
   }
-  *, *::before, *::after { box-sizing: inherit; }
-  html, body { margin: 0; min-height: 100%; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
   body {
-    background: radial-gradient(ellipse at center, var(--tapis) 0%, var(--tapis-fonce) 100%);
+    background: radial-gradient(120% 85% at 45% 38%, var(--tapis) 0%, var(--tapis-fonce) 100%) fixed;
     background-color: var(--tapis-fonce);
     color: var(--texte);
     font-family: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
   }
-  main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-
-  h1 {
-    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
-    font-weight: 400;
-    font-size: clamp(2rem, 6vw, 3.4rem);
-    line-height: 1;
-    margin: 0 0 1.5rem;
-    text-align: center;
-    letter-spacing: 0.01em;
-  }
-
-  /* Zone où la carte tirée s'affiche */
-  .table {
-    display: grid;
-    place-items: center;
-    min-height: min(540px, 72vh);
-    margin-bottom: 2rem;
-    perspective: 1200px;
-  }
-  .carte {
-    /* format des cartes : 639 x 1039 px */
-    width: min(320px, 78vw, calc(68vh * 639 / 1039));
-    aspect-ratio: 639 / 1039;
-    border-radius: 14px;
-    background: rgba(0,0,0,.18);
-    border: 2px dashed rgba(243,239,228,.3);
-    display: grid;
-    place-items: center;
-    text-align: center;
-    padding: 1rem;
-    overflow: hidden;
-    position: relative;
-  }
-  .carte.pleine {
-    border: none;
-    background: #fff;
-    padding: 0;
-    box-shadow: 0 0 0 6px var(--couleur, var(--normal)), 0 18px 40px rgba(0,0,0,.45);
-  }
-  .carte img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .carte .manque { color: #333; padding: 1rem; font-size: .95rem; }
-  .carte .vide { opacity: .7; }
-  .anime { animation: retourne .45s ease-out; }
-  @keyframes retourne {
-    from { transform: rotateY(90deg) translateY(-20px); opacity: .3; }
-    to   { transform: rotateY(0) translateY(0); opacity: 1; }
-  }
-  .legende { margin-top: .9rem; text-align: center; min-height: 1.4em; }
-
-  /* Les 4 paquets */
-  .paquets {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-  }
-  @media (max-width: 700px) { .paquets { grid-template-columns: repeat(2, 1fr); } }
-
-  .paquet { display: flex; flex-direction: column; align-items: stretch; gap: .5rem; }
-  .paquet button.tirer {
-    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
-    font-size: 1.15rem;
-    padding: 1.4rem .5rem;
-    border: none;
-    border-radius: 12px;
-    background: var(--couleur);
-    color: var(--encre, #1b1b1b);
-    cursor: pointer;
-    box-shadow: 0 5px 0 rgba(0,0,0,.35), 4px 9px 0 -2px var(--couleur), 8px 13px 0 -4px var(--couleur);
-    transition: transform .1s;
-  }
-  .paquet button.tirer:active { transform: translateY(3px); }
-  .paquet button.tirer:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
-  .paquet button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-  .infos { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; margin-top: .6rem; }
-  .paquet button.melanger {
-    background: none; border: 1px solid rgba(243,239,228,.45); color: var(--texte);
-    border-radius: 6px; padding: .2rem .5rem; font: inherit; font-size: .8rem; cursor: pointer;
-  }
+  button { font: inherit; color: inherit; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+  button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  [hidden] { display: none !important; }
 
   .normal { --couleur: var(--normal); }
   .fumer  { --couleur: var(--fumer); }
   .alcool { --couleur: var(--alcool); }
   .sam    { --couleur: var(--sam); --encre: #fff; }
 
-  .tout { display: block; margin: 2rem auto 0; background: none; color: var(--texte);
-    border: 1px solid rgba(243,239,228,.45); border-radius: 8px; padding: .6rem 1rem; font: inherit; cursor: pointer; }
+  /* ---------- Cadre ---------- */
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: calc(env(safe-area-inset-top, 0px) + .8rem) 1rem calc(var(--dock) + env(safe-area-inset-bottom, 0px) + 1rem);
+  }
 
-  @media (prefers-reduced-motion: reduce) { .anime { animation: none; } }
+  /* ---------- En-tête ---------- */
+  header { display: flex; align-items: center; gap: .6rem; }
+  h1 {
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    font-weight: 400;
+    font-size: 1.9rem;
+    line-height: 1;
+    margin: 0;
+    flex: 1;
+  }
+  .stocks { display: flex; gap: .5rem; }
+  .pastille {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--panneau);
+    border-radius: 999px;
+    padding: .35rem .75rem;
+    font-size: .85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pastille::before { content: ""; width: .6rem; height: .85rem; border-radius: 2px; background: var(--couleur); }
+  .pastille.epuise { opacity: .4; }
+  .pastille .nom, .pastille:not(.normal) { display: none; }
+
+  .reset {
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    border: none; background: var(--panneau); cursor: pointer;
+    display: grid; place-items: center; font-size: 1.15rem;
+  }
+  .reset .txt-pc { display: none; }
+
+  /* ---------- Table ---------- */
+  .table {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+  .zone-carte { display: flex; flex-direction: column; align-items: center; gap: .9rem; }
+
+  .carte {
+    aspect-ratio: var(--ratio);
+    border-radius: 12px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    border: none;
+    padding: 0;
+    background: none;
+    flex-shrink: 0;
+  }
+  .carte img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .carte .manque { color: #333; padding: .6rem; font-size: .75rem; overflow-wrap: anywhere; margin: 0; }
+  .carte.pleine {
+    background: #fff;
+    box-shadow: 0 0 0 5px var(--couleur), 0 16px 34px rgba(0,0,0,.5);
+    cursor: zoom-in;
+  }
+  .carte.dos {
+    border: 2px dashed rgba(243,239,228,.35);
+    background: rgba(0,0,0,.15);
+    color: var(--texte-doux);
+    padding: 1.2rem;
+    font-size: .95rem;
+    line-height: 1.4;
+  }
+
+  .grande { width: min(68vw, calc(52vh * 639 / 1039), 300px); transition: width .35s ease; }
+  body.tour-avec-penalites .grande { width: min(46vw, calc(33vh * 639 / 1039), 220px); }
+
+  .legende { margin: 0; font-weight: 600; font-size: .95rem; color: var(--texte-doux); min-height: 1.4em; text-align: center; }
+
+  .tirees { display: flex; justify-content: center; gap: .9rem; flex-wrap: wrap; }
+  .petite { width: min(26vw, calc(20vh * 639 / 1039), 120px); }
+  .petite.pleine { box-shadow: 0 0 0 4px var(--couleur), 0 10px 20px rgba(0,0,0,.45); }
+  .tirees .carte:nth-child(3n+1) { rotate: -4deg; }
+  .tirees .carte:nth-child(3n+3) { rotate: 4deg; }
+
+  .anime { animation: retourne .45s cubic-bezier(.2,.8,.3,1.2); }
+  @keyframes retourne {
+    from { transform: rotateY(90deg) translateY(-24px) scale(.9); opacity: .2; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  /* ---------- Barre du bas (téléphone) ---------- */
+  .dock {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    padding: .9rem 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem);
+    background: linear-gradient(to top, rgba(10,30,20,.97) 60%, rgba(10,30,20,0));
+    z-index: 5;
+  }
+  .dock-inner { max-width: 480px; margin: 0 auto; }
+
+  .consigne { text-align: center; font-weight: 700; font-size: 1rem; margin: 0 0 .7rem; min-height: 1.3em; }
+
+  .choix { display: none; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+  body.en-penalite .choix { display: grid; }
+  body.en-penalite .gros { display: none; }
+
+  .choix button, .gros {
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,.4);
+    transition: transform .08s, opacity .2s, filter .15s;
+  }
+  .choix button {
+    font-size: 1.05rem;
+    padding: .9rem .3rem .7rem;
+    background: var(--couleur);
+    color: var(--encre, #1b1b1b);
+  }
+  .choix button small {
+    display: block;
+    font-family: "Work Sans", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: .75rem;
+    margin-top: .25rem;
+    opacity: .8;
+  }
+  .choix button kbd { display: none; }
+  .choix button:active:not(:disabled), .gros:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.4); }
+  .choix button:disabled { opacity: .3; cursor: not-allowed; box-shadow: none; }
+
+  .gros {
+    width: 100%;
+    font-size: 1.35rem;
+    padding: 1.1rem 1rem;
+    background: var(--normal);
+    color: #1b1b1b;
+  }
+  .gros:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+  .raccourcis, .historique { display: none; }
+
+  /* ---------- Zoom plein écran ---------- */
+  .zoom {
+    position: fixed; inset: 0;
+    background: rgba(5,15,10,.9);
+    display: grid; place-items: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem);
+    z-index: 10;
+    cursor: zoom-out;
+  }
+  .zoom img { max-width: 100%; max-height: 100%; aspect-ratio: var(--ratio); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+
+  kbd {
+    display: inline-block; min-width: 1.6em; text-align: center;
+    padding: .1rem .4rem; border-radius: 5px;
+    background: rgba(0,0,0,.3); border: 1px solid rgba(243,239,228,.25);
+    font-family: "Work Sans", system-ui, sans-serif; font-size: .8rem;
+  }
+
+  /* =====================================================
+     Version PC (écran de 900 px et plus)
+     ===================================================== */
+  @media (min-width: 900px) {
+    .app {
+      max-width: 1500px;
+      height: 100%;
+      min-height: 640px;
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 1.5rem;
+    }
+
+    header { gap: 1.5rem; }
+    h1 { font-size: 2.6rem; flex: none; min-width: 9ch; }
+    .stocks { flex: 1; flex-wrap: wrap; gap: .6rem; }
+    .pastille { padding: .4rem .9rem; font-size: .9rem; }
+    .pastille:not(.normal) { display: inline-flex; }
+    .pastille .nom { display: inline; }
+
+    .reset {
+      width: auto; height: auto; border-radius: 10px;
+      background: none; border: 1px solid rgba(243,239,228,.4);
+      padding: .55rem 1rem; font-size: 1rem;
+    }
+    .reset:hover { background: rgba(255,255,255,.06); }
+    .reset .txt-pc { display: inline; }
+    .reset .txt-mobile { display: none; }
+
+    /* Grille : carte | pénalités | historique */
+    .table {
+      display: grid;
+      grid-template-columns: auto 1fr 280px;
+      grid-template-rows: auto auto 1fr auto;
+      grid-template-areas:
+        "carte  consigne histo"
+        "carte  choix    histo"
+        "carte  tirees   histo"
+        "action racc     histo";
+      column-gap: 2.5rem;
+      row-gap: 1.5rem;
+      align-items: start;
+      padding-top: 0;
+      min-height: 0;
+    }
+    .dock, .dock-inner { display: contents; }
+
+    .zone-carte { grid-area: carte; }
+    .consigne   { grid-area: consigne; }
+    .choix      { grid-area: choix; }
+    .tirees     { grid-area: tirees; }
+    .gros       { grid-area: action; }
+    .raccourcis { grid-area: racc; }
+    .historique { grid-area: histo; }
+
+    .grande, body.tour-avec-penalites .grande {
+      width: min(380px, calc((100vh - 17rem) * 639 / 1039));
+      min-width: 230px;
+      transition: none;
+    }
+    .carte { border-radius: 14px; }
+    .carte.pleine { box-shadow: 0 0 0 6px var(--couleur), 0 20px 40px rgba(0,0,0,.5); transition: transform .15s; }
+    .carte.pleine:hover { transform: translateY(-4px); }
+
+    .consigne {
+      text-align: left;
+      font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+      font-weight: 400;
+      font-size: 2rem;
+      line-height: 1.1;
+      margin: .5rem 0 0;
+      min-height: 2.2rem;
+    }
+    .consigne.calme { font-family: "Work Sans", system-ui, sans-serif; font-weight: 600; font-size: 1.2rem; color: var(--texte-doux); }
+
+    .choix { display: none; grid-template-columns: repeat(3, minmax(0, 200px)); gap: 1rem; }
+    body.tour-avec-penalites .choix { display: grid; }
+    .choix button { font-size: 1.35rem; padding: 1.2rem .5rem 1rem; }
+    .choix button:hover:not(:disabled) { filter: brightness(1.08); }
+    .choix button small { font-size: .8rem; margin-top: .35rem; }
+    .choix button kbd { display: inline-block; font-size: .7rem; opacity: .7; }
+    .choix button:disabled { opacity: .25; }
+
+    body.en-penalite .gros { display: block; }
+    .gros { align-self: end; }
+
+    .tirees { justify-content: flex-start; gap: 1.5rem; }
+    .tirees .carte { rotate: none !important; }
+    .petite { width: min(190px, calc((100vh - 26rem) * 639 / 1039)); min-width: 120px; }
+    .petite.pleine { box-shadow: 0 0 0 5px var(--couleur), 0 14px 28px rgba(0,0,0,.45); }
+
+    .raccourcis { display: block; align-self: end; margin: 0 0 1rem; font-size: .85rem; color: var(--texte-doux); }
+
+    .historique {
+      display: flex;
+      flex-direction: column;
+      align-self: stretch;
+      background: var(--panneau);
+      border-radius: 16px;
+      padding: 1.1rem 1.1rem .5rem;
+      min-height: 0;
+    }
+    .historique h2 { font-size: 1rem; margin: 0 0 .8rem; }
+    .historique ol { list-style: none; margin: 0; padding: 0 .3rem 0 0; overflow-y: auto; flex: 1; }
+    .historique li { padding: .6rem 0; border-top: 1px solid rgba(243,239,228,.12); font-size: .9rem; line-height: 1.45; }
+    .historique li:first-child { border-top: none; }
+    .historique .num { font-weight: 700; }
+    .historique .vide, .historique .aucune { color: var(--texte-doux); }
+    .puce { display: inline-block; padding: .05rem .45rem; border-radius: 5px; font-size: .8rem; font-weight: 600; background: var(--couleur); color: var(--encre, #1b1b1b); margin: .15rem .2rem 0 0; }
+
+    .zoom { padding: 2rem; }
+    .zoom img { border-radius: 18px; }
+  }
+
+  /* PC un peu étroit : on cache l'historique */
+  @media (min-width: 900px) and (max-width: 1100px) {
+    .table {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        "carte  consigne"
+        "carte  choix"
+        "carte  tirees"
+        "action racc";
+    }
+    .historique { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .anime { animation: none; }
+    .grande, .carte.pleine { transition: none; }
+  }
 </style>
 </head>
 <body>
-<main>
-  <h1>À toi de piocher</h1>
+<div class="app">
+  <header>
+    <h1 id="titre">Prêt ?</h1>
+    <div class="stocks" id="stocks"></div>
+    <button class="reset" id="reset" aria-label="Nouvelle partie" title="Nouvelle partie">
+      <span class="txt-mobile" aria-hidden="true">↻</span><span class="txt-pc">Nouvelle partie</span>
+    </button>
+  </header>
 
-  <section class="table">
-    <div>
-      <div id="carte" class="carte"><span class="vide">Choisis un paquet pour tirer une carte</span></div>
+  <main class="table">
+    <section class="zone-carte">
+      <div id="carteNormale" class="carte grande dos">Tire ta première carte pour commencer</div>
       <p id="legende" class="legende"></p>
-    </div>
-  </section>
+    </section>
 
-  <section class="paquets" id="paquets"></section>
-  <button class="tout" id="tout">Remélanger tous les paquets</button>
-</main>
+    <div class="tirees" id="tirees"></div>
+
+    <div class="dock">
+      <div class="dock-inner">
+        <p class="consigne calme" id="consigne"></p>
+        <div class="choix" id="choix"></div>
+        <button class="gros" id="action">Tirer une carte</button>
+      </div>
+    </div>
+
+    <p class="raccourcis">
+      <kbd>Espace</kbd> tour suivant &nbsp;&nbsp;
+      <kbd>1</kbd> Fumer &nbsp; <kbd>2</kbd> Alcool &nbsp; <kbd>3</kbd> Sam &nbsp;&nbsp;
+      clic sur une carte pour l'agrandir
+    </p>
+
+    <aside class="historique">
+      <h2>Historique</h2>
+      <ol id="historique"><li class="vide">Aucun tour joué</li></ol>
+    </aside>
+  </main>
+</div>
+
+<div class="zoom" id="zoom" hidden><img id="zoomImg" alt=""></div>
 
 <script>
-/* ===== CONFIGURATION =====
-   dossier : nom du dossier à côté de ce fichier
-   nombre  : nombre d'images (nommées 1.png, 2.png, 3.png...)            */
-const PAQUETS = [
-  { id: "normal", nom: "Normale",  dossier: "normal", nombre: 79 },
-  { id: "fumer",  nom: "Fumer",    dossier: "fumer",  nombre: 20 },
-  { id: "alcool", nom: "Alcool",   dossier: "alcool", nombre: 20 },
-  { id: "sam",    nom: "Sam",      dossier: "sam",    nombre: 20 },
-];
+/* ================= CONFIGURATION =================
+   Les images sont nommées 1.png, 2.png, 3.png... dans chaque dossier. */
 const EXTENSION = ".png";
-/* ========================= */
 
-const etat = {};
-const zone = document.getElementById("paquets");
-const carte = document.getElementById("carte");
-const legende = document.getElementById("legende");
+const NORMAL = { id: "normal", nom: "Normale", dossier: "normal", nombre: 79 };
+
+const PENALITES = [
+  { id: "fumer",  nom: "Fumer",  dossier: "fumer",  nombre: 20 },
+  { id: "alcool", nom: "Alcool", dossier: "alcool", nombre: 20 },
+  { id: "sam",    nom: "Sam",    dossier: "sam",    nombre: 20 },
+];
+
+/* Nombre de pénalités envoyées par chaque carte normale.
+   numéro de la carte : nombre de pénalités  (0 = aucune)             */
+const PENALITES_PAR_CARTE = {
+  1:0,   2:1,   3:2,   4:0,   5:0,   6:0,   7:0,   8:0,   9:0,   10:0,
+  11:0,  12:0,  13:0,  14:0,  15:0,  16:1,  17:2,  18:0,  19:0,  20:2,
+  21:1,  22:1,  23:0,  24:1,  25:1,  26:0,  27:0,  28:1,  29:0,  30:0,
+  31:1,  32:0,  33:0,  34:0,  35:0,  36:0,  37:0,  38:0,  39:0,  40:0,
+  41:1,  42:1,  43:0,  44:0,  45:0,  46:0,  47:0,  48:0,  49:0,  50:0,
+  51:0,  52:0,  53:0,  54:0,  55:0,  56:0,  57:0,  58:0,  59:0,  60:0,
+  61:0,  62:1,  63:0,  64:1,  65:0,  66:2,  67:0,  68:0,  69:0,  70:1,
+  71:1,  72:0,  73:0,  74:0,  75:0,  76:0,  77:0,  78:0,  79:0,
+};
+/* ================================================= */
+
+const TOUS = [NORMAL, ...PENALITES];
+const paquets = {};
+let tour = 0, aTirer = 0, totalCeTour = 0;
+let ligneHisto = null;
+
+const $ = id => document.getElementById(id);
 
 function melanger(p) {
   const liste = Array.from({ length: p.nombre }, (_, i) => i + 1);
@@ -158,58 +428,175 @@ function melanger(p) {
     const j = Math.floor(Math.random() * (i + 1));
     [liste[i], liste[j]] = [liste[j], liste[i]];
   }
-  etat[p.id] = liste;
-  majCompteur(p);
+  paquets[p.id] = liste;
 }
 
-function majCompteur(p) {
-  const reste = etat[p.id].length;
-  document.getElementById("reste-" + p.id).textContent = reste + " / " + p.nombre;
-  document.getElementById("btn-" + p.id).disabled = reste === 0;
-}
-
-function tirer(p) {
-  const num = etat[p.id].pop();
-  if (num === undefined) return;
-  majCompteur(p);
-
+function remplirCarte(el, p, num) {
   const chemin = p.dossier + "/" + num + EXTENSION;
-  carte.className = "carte pleine " + p.id;
-  carte.innerHTML = "";
+  el.className = el.className.replace(/\b(dos|pleine|anime|normal|fumer|alcool|sam)\b/g, "").trim() + " pleine " + p.id;
+  el.innerHTML = "";
+  el.dataset.src = chemin;
   const img = document.createElement("img");
   img.alt = p.nom + " n°" + num;
   img.src = chemin;
   img.onerror = () => {
-    carte.innerHTML = '<p class="manque">Image introuvable :<br><strong>' + chemin +
-      '</strong><br><br>Vérifie que le fichier existe à côté de index.html.</p>';
+    el.innerHTML = '<p class="manque">Image introuvable :<br><strong>' + chemin + '</strong></p>';
+    delete el.dataset.src;
   };
-  carte.appendChild(img);
-  void carte.offsetWidth;
-  carte.classList.add("anime");
-
-  const reste = etat[p.id].length;
-  legende.textContent = p.nom + " — carte " + num + (reste === 0 ? " (paquet vide)" : "");
+  el.appendChild(img);
+  void el.offsetWidth;
+  el.classList.add("anime");
 }
 
-PAQUETS.forEach(p => {
-  const div = document.createElement("div");
-  div.className = "paquet " + p.id;
-  div.innerHTML =
-    '<button class="tirer" id="btn-' + p.id + '">' + p.nom + '</button>' +
-    '<div class="infos"><span id="reste-' + p.id + '"></span>' +
-    '<button class="melanger" id="mel-' + p.id + '">Remélanger</button></div>';
-  zone.appendChild(div);
-  document.getElementById("btn-" + p.id).onclick = () => tirer(p);
-  document.getElementById("mel-" + p.id).onclick = () => melanger(p);
-  melanger(p);
+function vibrer() { if (navigator.vibrate) navigator.vibrate(15); }
+
+/* ---- Début du tour : carte normale ---- */
+function tirerNormale() {
+  if (aTirer > 0) return;
+  const num = paquets.normal.pop();
+  if (num === undefined) return;
+  vibrer();
+  tour++;
+  $("titre").textContent = "Tour " + tour;
+
+  totalCeTour = PENALITES_PAR_CARTE[num] || 0;
+  aTirer = totalCeTour;
+  $("tirees").innerHTML = "";
+
+  remplirCarte($("carteNormale"), NORMAL, num);
+  $("legende").textContent = "Carte " + num + " · " +
+    (totalCeTour === 0 ? "aucune pénalité" : totalCeTour + " pénalité" + (totalCeTour > 1 ? "s" : ""));
+
+  const liste = $("historique");
+  if (tour === 1) liste.innerHTML = "";
+  ligneHisto = document.createElement("li");
+  ligneHisto.innerHTML = '<span class="num">Tour ' + tour + '</span> · carte ' + num +
+    (totalCeTour === 0 ? ' · <span class="aucune">aucune pénalité</span>' : '') + '<br>';
+  liste.prepend(ligneHisto);
+
+  majInterface();
+}
+
+/* ---- Pénalité choisie ---- */
+function tirerPenalite(p) {
+  if (aTirer <= 0) return;
+  const num = paquets[p.id].pop();
+  if (num === undefined) return;
+  vibrer();
+  aTirer--;
+  const el = document.createElement("button");
+  el.className = "carte petite";
+  el.setAttribute("aria-label", "Agrandir " + p.nom + " n°" + num);
+  $("tirees").appendChild(el);
+  remplirCarte(el, p, num);
+
+  if (ligneHisto) {
+    const puce = document.createElement("span");
+    puce.className = "puce " + p.id;
+    puce.textContent = p.nom + " " + num;
+    ligneHisto.appendChild(puce);
+  }
+  majInterface();
+}
+
+function stockPenalites() {
+  return PENALITES.reduce((s, p) => s + paquets[p.id].length, 0);
+}
+
+function majInterface() {
+  if (aTirer > 0 && stockPenalites() === 0) aTirer = 0;
+  const enPenalite = aTirer > 0;
+  document.body.classList.toggle("en-penalite", enPenalite);
+  document.body.classList.toggle("tour-avec-penalites", totalCeTour > 0);
+
+  TOUS.forEach(p => {
+    const el = $("stock-" + p.id);
+    const reste = paquets[p.id].length;
+    el.innerHTML = '<span class="nom">' + p.nom + ' </span>' + reste + " / " + p.nombre;
+    el.classList.toggle("epuise", reste === 0);
+  });
+
+  PENALITES.forEach(p => {
+    const b = $("choix-" + p.id);
+    const reste = paquets[p.id].length;
+    b.querySelector("small").textContent = reste + " dispo";
+    b.disabled = !enPenalite || reste === 0;
+  });
+
+  const c = $("consigne");
+  let texte = "", calme = true;
+  if (tour === 0) texte = "Tire une carte normale pour lancer la partie";
+  else if (enPenalite) { texte = aTirer + " pénalité" + (aTirer > 1 ? "s" : "") + " à tirer · choisis un paquet"; calme = false; }
+  else if (totalCeTour === 0) texte = "Pas de pénalité ce tour";
+  else if ($("tirees").children.length < totalCeTour) texte = "Plus de cartes pénalité disponibles";
+  else texte = "Pénalités tirées, au suivant";
+  c.textContent = texte;
+  c.classList.toggle("calme", calme);
+
+  const action = $("action");
+  if (paquets.normal.length === 0 && !enPenalite) {
+    action.textContent = "Partie terminée";
+    action.disabled = true;
+  } else {
+    action.textContent = tour === 0 ? "Tirer une carte" : "Tour suivant";
+    action.disabled = enPenalite;
+  }
+}
+
+function nouvellePartie() {
+  TOUS.forEach(melanger);
+  tour = 0; aTirer = 0; totalCeTour = 0; ligneHisto = null;
+  $("titre").textContent = "Prêt ?";
+  const c = $("carteNormale");
+  c.className = "carte grande dos";
+  delete c.dataset.src;
+  c.textContent = "Tire ta première carte pour commencer";
+  $("legende").textContent = "";
+  $("tirees").innerHTML = "";
+  $("historique").innerHTML = '<li class="vide">Aucun tour joué</li>';
+  majInterface();
+}
+
+/* ---- Zoom ---- */
+function fermerZoom() { $("zoom").hidden = true; }
+document.addEventListener("click", e => {
+  const c = e.target.closest(".carte.pleine");
+  if (c && c.dataset.src) { $("zoomImg").src = c.dataset.src; $("zoom").hidden = false; }
+});
+$("zoom").onclick = fermerZoom;
+
+/* ---- Raccourcis clavier (PC) ---- */
+document.addEventListener("keydown", e => {
+  if (!$("zoom").hidden) { fermerZoom(); return; }
+  if (e.key === " " || e.key === "Enter") {
+    if (e.key === "Enter" && document.activeElement && document.activeElement.tagName === "BUTTON") return;
+    e.preventDefault();
+    tirerNormale();
+    return;
+  }
+  const i = ["1", "2", "3"].indexOf(e.key);
+  if (i !== -1 && PENALITES[i] && !$("choix-" + PENALITES[i].id).disabled) tirerPenalite(PENALITES[i]);
 });
 
-document.getElementById("tout").onclick = () => {
-  PAQUETS.forEach(melanger);
-  carte.className = "carte";
-  carte.innerHTML = '<span class="vide">Choisis un paquet pour tirer une carte</span>';
-  legende.textContent = "";
-};
+/* ---- Construction ---- */
+TOUS.forEach(p => {
+  const s = document.createElement("span");
+  s.id = "stock-" + p.id;
+  s.className = "pastille " + p.id;
+  $("stocks").appendChild(s);
+});
+PENALITES.forEach((p, i) => {
+  const b = document.createElement("button");
+  b.id = "choix-" + p.id;
+  b.className = p.id;
+  b.innerHTML = p.nom + " <kbd>" + (i + 1) + "</kbd><small></small>";
+  b.onclick = () => tirerPenalite(p);
+  $("choix").appendChild(b);
+});
+$("action").onclick = tirerNormale;
+$("reset").onclick = () => { if (tour === 0 || confirm("Recommencer une nouvelle partie ?")) nouvellePartie(); };
+
+nouvellePartie();
 </script>
 </body>
 </html>
