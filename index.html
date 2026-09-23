@@ -131,7 +131,8 @@
   .legende { margin: 0; font-weight: 600; font-size: .95rem; color: var(--texte-doux); min-height: 1.4em; text-align: center; }
 
   .tirees { display: flex; justify-content: center; gap: .9rem; flex-wrap: wrap; }
-  .petite { width: min(26vw, calc(20vh * 639 / 1039), 120px); }
+  .petite { width: min(22vw, calc(20vh * 639 / 1039), 120px); }
+  .table { padding-left: 3.4rem; }
   .petite.pleine { box-shadow: 0 0 0 4px var(--couleur), 0 10px 20px rgba(0,0,0,.45); }
   .tirees .carte:nth-child(3n+1) { rotate: -4deg; }
   .tirees .carte:nth-child(3n+3) { rotate: 4deg; }
@@ -213,6 +214,78 @@
     font-family: "Work Sans", system-ui, sans-serif; font-size: .8rem;
   }
 
+  /* ---------- Badges de défi ---------- */
+  .badges {
+    position: fixed;
+    left: .5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: .55rem;
+    z-index: 4;
+  }
+  .badges h2 { display: none; }
+  .badge {
+    border: none; background: none; padding: 0; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: .25rem;
+  }
+  .medaille {
+    position: relative;
+    width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    font-size: .95rem;
+    background: #1b1b1b;
+    color: #f3efe4;
+    border: 3px solid var(--c, #f3efe4);
+    box-shadow: 0 4px 10px rgba(0,0,0,.4);
+    transition: transform .12s;
+  }
+  .badge:active .medaille { transform: scale(.92); }
+  .badge.libre .medaille {
+    background: rgba(0,0,0,.25);
+    border: 2px dashed rgba(243,239,228,.45);
+    color: var(--texte-doux);
+    box-shadow: none;
+  }
+  .medaille i {
+    position: absolute; right: -6px; bottom: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--c); color: #1b1b1b;
+    font-style: normal; font-family: "Work Sans", system-ui, sans-serif; font-weight: 700; font-size: .7rem;
+    display: grid; place-items: center;
+    border: 2px solid var(--tapis-fonce);
+  }
+  .porteur { display: none; }
+
+  .chip { display: inline-flex; align-items: center; gap: .35rem; }
+  .chip .point { width: .55rem; height: .55rem; border-radius: 50%; background: var(--c); flex-shrink: 0; }
+  .chip small { font-family: "Bowlby One", Impact, sans-serif; font-size: .7rem; opacity: .85; }
+
+  /* ---------- Fenêtre duel ---------- */
+  .modale {
+    position: fixed; inset: 0; z-index: 18;
+    background: rgba(5,15,10,.8);
+    display: grid; place-items: center;
+    padding: 1.2rem;
+  }
+  .modale-boite {
+    width: 100%; max-width: 400px;
+    background: var(--tapis-fonce);
+    border: 1px solid rgba(243,239,228,.15);
+    border-radius: 20px;
+    padding: 1.6rem 1.3rem 1rem;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    animation: monte .25s ease-out;
+  }
+  .modale-boite h3 {
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    font-weight: 400; font-size: 1.6rem; line-height: 1.1; margin: 0 0 .6rem;
+  }
+  .modale-boite p { color: var(--texte-doux); margin: 0 0 1.3rem; line-height: 1.45; }
+  .modale-choix { display: grid; gap: .7rem; }
+  .modale-choix .gros { background: var(--c, var(--normal)); font-size: 1.15rem; display: block; grid-area: auto; }
+
   /* =====================================================
      Version PC (écran de 900 px et plus)
      ===================================================== */
@@ -223,9 +296,11 @@
       min-height: 640px;
       padding: 1.5rem 2rem;
       display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 1.5rem;
+      grid-template-rows: auto auto 1fr;
+      gap: 1rem;
     }
+    .joueurs { margin-top: 0; }
+    .chip { font-size: .95rem; padding: .35rem .9rem; }
 
     header { gap: 1.5rem; }
     h1 { font-size: 2.6rem; flex: none; min-width: 9ch; }
@@ -246,13 +321,13 @@
     /* Grille : carte | pénalités | historique */
     .table {
       display: grid;
-      grid-template-columns: auto 1fr 280px;
+      grid-template-columns: 96px auto 1fr 280px;
       grid-template-rows: auto auto 1fr auto;
       grid-template-areas:
-        "carte  consigne histo"
-        "carte  choix    histo"
-        "carte  tirees   histo"
-        "action racc     histo";
+        "badges carte  consigne histo"
+        "badges carte  choix    histo"
+        "badges carte  tirees   histo"
+        "badges action racc     histo";
       column-gap: 2.5rem;
       row-gap: 1.5rem;
       align-items: start;
@@ -268,9 +343,32 @@
     .gros       { grid-area: action; }
     .raccourcis { grid-area: racc; }
     .historique { grid-area: histo; }
+    .table { padding-left: 0; }
+
+    .badges {
+      grid-area: badges;
+      position: static; transform: none;
+      align-self: stretch;
+      justify-content: flex-start;
+      gap: 1rem;
+      background: var(--panneau);
+      border-radius: 16px;
+      padding: 1rem .4rem;
+    }
+    .badges h2 { display: block; font-size: .85rem; text-align: center; margin: 0 0 .2rem; }
+    .medaille { width: 58px; height: 58px; font-size: 1.2rem; border-width: 4px; }
+    .medaille i { display: none; }
+    .badge:hover .medaille { transform: translateY(-2px); }
+    .porteur {
+      display: block; max-width: 88px;
+      font-size: .78rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: var(--c, var(--texte-doux));
+    }
+    .badge.libre .porteur { color: var(--texte-doux); opacity: .7; }
 
     .grande, body.tour-avec-penalites .grande {
-      width: min(380px, calc((100vh - 17rem) * 639 / 1039));
+      width: min(380px, calc((100vh - 20rem) * 639 / 1039));
       min-width: 230px;
       transition: none;
     }
@@ -302,7 +400,7 @@
 
     .tirees { justify-content: flex-start; gap: 1.5rem; }
     .tirees .carte { rotate: none !important; }
-    .petite { width: min(190px, calc((100vh - 26rem) * 639 / 1039)); min-width: 120px; }
+    .petite { width: min(190px, calc((100vh - 29rem) * 639 / 1039)); min-width: 120px; }
     .petite.pleine { box-shadow: 0 0 0 5px var(--couleur), 0 14px 28px rgba(0,0,0,.45); }
 
     .raccourcis { display: block; align-self: end; margin: 0 0 1rem; font-size: .85rem; color: var(--texte-doux); }
@@ -406,15 +504,70 @@
   }
   @media (prefers-reduced-motion: reduce) { .regles-boite { animation: none; } }
 
+
+  /* ---------- Joueur actif + ordre des joueurs ---------- */
+  .qui { flex: 1; min-width: 0; }
+  .qui h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sous-titre { display: block; font-size: .85rem; font-weight: 600; color: var(--texte-doux); margin-top: .2rem; }
+  .joueurs { display: flex; gap: .4rem; overflow-x: auto; margin-top: .7rem; padding-bottom: .2rem; scrollbar-width: none; }
+  .chip {
+    padding: .3rem .75rem; border-radius: 999px; background: var(--panneau);
+    font-size: .85rem; font-weight: 600; white-space: nowrap; opacity: .6;
+  }
+  .chip.actif { background: var(--normal); color: #1b1b1b; opacity: 1; }
+
+  /* ---------- Écran de départ ---------- */
+  .accueil {
+    position: fixed; inset: 0; z-index: 15;
+    background: radial-gradient(120% 85% at 50% 30%, var(--tapis) 0%, var(--tapis-fonce) 100%);
+    display: grid; place-items: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1.2rem calc(env(safe-area-inset-bottom, 0px) + 1rem);
+    overflow-y: auto;
+  }
+  .accueil-boite { width: 100%; max-width: 420px; }
+  .accueil h2 {
+    font-family: "Bowlby One", Impact, "Arial Black", sans-serif;
+    font-weight: 400; font-size: 2.6rem; line-height: 1; margin: 0 0 .5rem;
+  }
+  .accueil .note { color: var(--texte-doux); margin: 0 0 1.4rem; }
+  .liste-joueurs { list-style: none; margin: 0 0 .8rem; padding: 0; display: grid; gap: .6rem; counter-reset: j; }
+  .liste-joueurs li { display: flex; align-items: center; gap: .6rem; counter-increment: j; }
+  .liste-joueurs li::before {
+    content: counter(j);
+    font-family: "Bowlby One", Impact, sans-serif; width: 1.6rem; text-align: center; opacity: .6;
+  }
+  .liste-joueurs input {
+    flex: 1; min-width: 0;
+    font: inherit; font-size: 1.05rem; font-weight: 600;
+    padding: .8rem 1rem; border-radius: 12px;
+    border: 2px solid transparent; background: rgba(0,0,0,.25); color: var(--texte);
+  }
+  .liste-joueurs input::placeholder { color: rgba(243,239,228,.45); }
+  .liste-joueurs input:focus { outline: none; border-color: var(--normal); }
+  .retirer {
+    width: 2.4rem; height: 2.4rem; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(0,0,0,.25); font-size: 1.2rem; flex-shrink: 0;
+  }
+  .retirer:disabled { opacity: .25; cursor: not-allowed; }
+  .ajouter {
+    width: 100%; margin-bottom: 1.4rem;
+    border: 2px dashed rgba(243,239,228,.4); background: none; border-radius: 12px;
+    padding: .75rem; font-weight: 700; cursor: pointer;
+  }
+  .ajouter:disabled { opacity: .35; cursor: not-allowed; }
+  .accueil .gros { display: block; }
+  .lien { display: block; margin: 1rem auto 0; background: none; border: none; color: var(--texte-doux); text-decoration: underline; cursor: pointer; }
+
+
   /* PC un peu étroit : on cache l'historique */
   @media (min-width: 900px) and (max-width: 1100px) {
     .table {
-      grid-template-columns: auto 1fr;
+      grid-template-columns: 96px auto 1fr;
       grid-template-areas:
-        "carte  consigne"
-        "carte  choix"
-        "carte  tirees"
-        "action racc";
+        "badges carte  consigne"
+        "badges carte  choix"
+        "badges carte  tirees"
+        "badges action racc";
     }
     .historique { display: none; }
   }
@@ -428,15 +581,18 @@
 <body>
 <div class="app">
   <header>
-    <h1 id="titre">Prêt ?</h1>
+    <div class="qui"><h1 id="titre">Prêt ?</h1><span class="sous-titre" id="sousTitre"></span></div>
     <div class="stocks" id="stocks"></div>
     <button class="btn-regles" id="ouvrirRegles">Règles</button>
     <button class="reset" id="reset" aria-label="Nouvelle partie" title="Nouvelle partie">
       <span class="txt-mobile" aria-hidden="true">↻</span><span class="txt-pc">Nouvelle partie</span>
     </button>
   </header>
+  <div class="joueurs" id="joueurs"></div>
 
   <main class="table">
+    <aside class="badges" id="badges" aria-label="Badges de défi"></aside>
+
     <section class="zone-carte">
       <div id="carteNormale" class="carte grande dos">Tire ta première carte pour commencer</div>
       <p id="legende" class="legende"></p>
@@ -466,6 +622,26 @@
 </div>
 
 
+<div class="accueil" id="accueil">
+  <div class="accueil-boite">
+    <h2>Qui joue ?</h2>
+    <p class="note">De 2 à 5 joueurs, dans l'ordre où vous allez jouer.</p>
+    <ol class="liste-joueurs" id="listeJoueurs"></ol>
+    <button class="ajouter" id="ajouterJoueur">+ Ajouter un joueur</button>
+    <button class="gros" id="commencer">Commencer la partie</button>
+    <button class="lien" id="voirRegles">Lire les règles</button>
+  </div>
+</div>
+
+<div class="modale" id="modale" hidden>
+  <div class="modale-boite" role="dialog" aria-modal="true" aria-labelledby="modaleTitre">
+    <h3 id="modaleTitre"></h3>
+    <p id="modaleTexte"></p>
+    <div class="modale-choix" id="modaleChoix"></div>
+    <button class="lien" id="modaleAnnuler">Annuler</button>
+  </div>
+</div>
+
 <div class="regles" id="regles" hidden>
   <div class="regles-boite" role="dialog" aria-modal="true" aria-label="Règles du jeu">
     <div class="regles-tete">
@@ -479,6 +655,7 @@
     <div class="regles-corps" id="contenu-regles">
       <h2>Transcription des documents de jeu</h2>
       <p><strong>Objectif :</strong> être le premier joueur à obtenir 10pt de livraison</p>
+      <p><strong>Joueurs :</strong> de 2 à 5</p>
 
       <h3>Cartes pénalités : (70)</h3>
 
@@ -541,6 +718,7 @@
 
       <h3>Badge de défi : (I ; II ; III ; IV ; V)</h3>
       <p>Valable jsq défaite du porteur du badge, le gagnant prend le jeton</p>
+      <p class="note">Dans l'appli : touche un badge à gauche pour le récupérer. S'il appartient déjà à un autre joueur, le duel s'ouvre et tu indiques qui a gagné.</p>
 
       <h3>Cases jumelles duel : (5x2)</h3>
 
@@ -641,11 +819,18 @@ const PENALITES_PAR_CARTE = {
 /* ================================================= */
 
 const TOUS = [NORMAL, ...PENALITES];
+const MIN_JOUEURS = 2, MAX_JOUEURS = 5;
 const paquets = {};
+let joueurs = [];
+let joueurActuel = 0;
 let tour = 0, aTirer = 0, totalCeTour = 0;
 let ligneHisto = null;
+const ROMAINS = ["I", "II", "III", "IV", "V"];
+const COULEURS_JOUEURS = ["#e76f9a", "#f08a4b", "#9b7be0", "#3fc1b0", "#c6d84a"];
+let badges = [null, null, null, null, null];   // index du joueur qui porte chaque badge
 
 const $ = id => document.getElementById(id);
+const echapper = t => t.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 function melanger(p) {
   const liste = Array.from({ length: p.nombre }, (_, i) => i + 1);
@@ -674,15 +859,36 @@ function remplirCarte(el, p, num) {
 }
 
 function vibrer() { if (navigator.vibrate) navigator.vibrate(15); }
+const prochainJoueur = () => (joueurActuel + 1) % joueurs.length;
+
+/* ---- En-tête : joueur actif ---- */
+function majJoueurs() {
+  $("titre").textContent = joueurs[joueurActuel] || "Prêt ?";
+  $("sousTitre").textContent = tour === 0 ? "Commence la partie" : "Tour " + tour;
+  const bloc = $("joueurs");
+  bloc.innerHTML = "";
+  joueurs.forEach((nom, i) => {
+    const c = document.createElement("span");
+    c.className = "chip" + (i === joueurActuel ? " actif" : "");
+    c.style.setProperty("--c", COULEURS_JOUEURS[i]);
+    const possedes = ROMAINS.filter((r, k) => badges[k] === i);
+    c.innerHTML = '<span class="point"></span>' + echapper(nom) +
+      (possedes.length ? " <small>" + possedes.join(" ") + "</small>" : "");
+    bloc.appendChild(c);
+  });
+  const actif = bloc.querySelector(".actif");
+  if (actif) actif.scrollIntoView({ block: "nearest", inline: "center" });
+}
 
 /* ---- Début du tour : carte normale ---- */
 function tirerNormale() {
   if (aTirer > 0) return;
+  if (paquets.normal.length === 0) return;
+  if (tour > 0) joueurActuel = prochainJoueur();
   const num = paquets.normal.pop();
-  if (num === undefined) return;
   vibrer();
   tour++;
-  $("titre").textContent = "Tour " + tour;
+  majJoueurs();
 
   totalCeTour = PENALITES_PAR_CARTE[num] || 0;
   aTirer = totalCeTour;
@@ -693,9 +899,10 @@ function tirerNormale() {
     (totalCeTour === 0 ? "aucune pénalité" : totalCeTour + " pénalité" + (totalCeTour > 1 ? "s" : ""));
 
   const liste = $("historique");
-  if (tour === 1) liste.innerHTML = "";
+  const vide = liste.querySelector(".vide");
+  if (vide) vide.remove();
   ligneHisto = document.createElement("li");
-  ligneHisto.innerHTML = '<span class="num">Tour ' + tour + '</span> · carte ' + num +
+  ligneHisto.innerHTML = '<span class="num">Tour ' + tour + ' · ' + echapper(joueurs[joueurActuel]) + '</span><br>carte ' + num +
     (totalCeTour === 0 ? ' · <span class="aucune">aucune pénalité</span>' : '') + '<br>';
   liste.prepend(ligneHisto);
 
@@ -724,6 +931,15 @@ function tirerPenalite(p) {
   majInterface();
 }
 
+/* ---- Paquet normal fini : on le remélange ---- */
+function remelangerNormal() {
+  melanger(NORMAL);
+  const li = document.createElement("li");
+  li.innerHTML = '<span class="aucune">Paquet normal remélangé</span>';
+  $("historique").prepend(li);
+  majInterface();
+}
+
 function stockPenalites() {
   return PENALITES.reduce((s, p) => s + paquets[p.id].length, 0);
 }
@@ -731,6 +947,7 @@ function stockPenalites() {
 function majInterface() {
   if (aTirer > 0 && stockPenalites() === 0) aTirer = 0;
   const enPenalite = aTirer > 0;
+  const normalVide = paquets.normal.length === 0;
   document.body.classList.toggle("en-penalite", enPenalite);
   document.body.classList.toggle("tour-avec-penalites", totalCeTour > 0);
 
@@ -750,28 +967,108 @@ function majInterface() {
 
   const c = $("consigne");
   let texte = "", calme = true;
-  if (tour === 0) texte = "Tire une carte normale pour lancer la partie";
-  else if (enPenalite) { texte = aTirer + " pénalité" + (aTirer > 1 ? "s" : "") + " à tirer · choisis un paquet"; calme = false; }
+  if (enPenalite) {
+    texte = echapper(joueurs[joueurActuel]) + " : " + aTirer + " pénalité" + (aTirer > 1 ? "s" : "") + " à tirer";
+    calme = false;
+  }
+  else if (normalVide) texte = "Toutes les cartes normales sont sorties, remélange pour continuer";
+  else if (tour === 0) texte = "À " + echapper(joueurs[0] || "toi") + " de commencer";
   else if (totalCeTour === 0) texte = "Pas de pénalité ce tour";
   else if ($("tirees").children.length < totalCeTour) texte = "Plus de cartes pénalité disponibles";
-  else texte = "Pénalités tirées, au suivant";
-  c.textContent = texte;
+  else texte = "Pénalités tirées";
+  c.innerHTML = texte;
   c.classList.toggle("calme", calme);
 
   const action = $("action");
-  if (paquets.normal.length === 0 && !enPenalite) {
-    action.textContent = "Partie terminée";
-    action.disabled = true;
-  } else {
-    action.textContent = tour === 0 ? "Tirer une carte" : "Tour suivant";
-    action.disabled = enPenalite;
-  }
+  action.disabled = enPenalite;
+  if (normalVide) action.textContent = "Remélanger le paquet normal";
+  else if (tour === 0) action.textContent = "Tirer une carte";
+  else action.textContent = "Au tour de " + joueurs[prochainJoueur()];
 }
+
+$("action").onclick = () => {
+  if (paquets.normal.length === 0) remelangerNormal();
+  else tirerNormale();
+};
+
+/* ---- Badges de défi ---- */
+function dessinerBadges() {
+  const zone = $("badges");
+  zone.innerHTML = '<h2>Badges</h2>';
+  ROMAINS.forEach((r, i) => {
+    const h = badges[i];
+    const b = document.createElement("button");
+    b.className = "badge" + (h === null ? " libre" : "");
+    if (h !== null) b.style.setProperty("--c", COULEURS_JOUEURS[h]);
+    b.innerHTML = '<span class="medaille">' + r +
+      (h !== null ? '<i>' + echapper(joueurs[h].charAt(0).toUpperCase()) + '</i>' : '') + '</span>' +
+      '<span class="porteur">' + (h === null ? "libre" : echapper(joueurs[h])) + '</span>';
+    b.setAttribute("aria-label", "Badge " + r + (h === null ? ", libre" : ", porté par " + joueurs[h]));
+    b.title = "Badge " + r + (h === null ? " · libre" : " · " + joueurs[h]);
+    b.onclick = () => cliquerBadge(i);
+    zone.appendChild(b);
+  });
+}
+function majBadges() { dessinerBadges(); majJoueurs(); }
+
+function noter(texte) {
+  const liste = $("historique");
+  const vide = liste.querySelector(".vide");
+  if (vide) vide.remove();
+  const li = document.createElement("li");
+  li.innerHTML = '<span class="aucune">' + echapper(texte) + '</span>';
+  liste.prepend(li);
+}
+
+function cliquerBadge(i) {
+  const r = ROMAINS[i], h = badges[i], moi = joueurActuel;
+  if (h === null) {
+    badges[i] = moi;
+    vibrer();
+    noter(joueurs[moi] + " récupère le badge " + r);
+    majBadges();
+    return;
+  }
+  if (h === moi) {
+    ouvrirModale("Badge " + r, joueurs[moi] + " possède déjà ce badge.", [
+      { texte: "Remettre le badge sur le plateau", action: () => { badges[i] = null; noter("Badge " + r + " remis sur le plateau"); } },
+    ]);
+    return;
+  }
+  ouvrirModale("Duel pour le badge " + r,
+    joueurs[h] + " (porteur) contre " + joueurs[moi] + ". Qui a gagné ?", [
+      { texte: joueurs[h] + " gagne", couleur: COULEURS_JOUEURS[h],
+        action: () => noter("Duel badge " + r + " : " + joueurs[h] + " garde le badge contre " + joueurs[moi]) },
+      { texte: joueurs[moi] + " gagne", couleur: COULEURS_JOUEURS[moi],
+        action: () => { badges[i] = moi; noter("Duel badge " + r + " : " + joueurs[moi] + " prend le badge à " + joueurs[h]); } },
+    ]);
+}
+
+/* ---- Fenêtre (duel, badge) ---- */
+function ouvrirModale(titre, texte, choix) {
+  $("modaleTitre").textContent = titre;
+  $("modaleTexte").textContent = texte;
+  const zone = $("modaleChoix");
+  zone.innerHTML = "";
+  choix.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "gros";
+    b.textContent = c.texte;
+    if (c.couleur) b.style.setProperty("--c", c.couleur);
+    b.onclick = () => { c.action(); fermerModale(); majBadges(); };
+    zone.appendChild(b);
+  });
+  $("modale").hidden = false;
+  zone.querySelector("button").focus();
+}
+function fermerModale() { $("modale").hidden = true; }
+$("modaleAnnuler").onclick = fermerModale;
+$("modale").addEventListener("click", e => { if (e.target.id === "modale") fermerModale(); });
 
 function nouvellePartie() {
   TOUS.forEach(melanger);
-  tour = 0; aTirer = 0; totalCeTour = 0; ligneHisto = null;
-  $("titre").textContent = "Prêt ?";
+  badges = [null, null, null, null, null];
+  tour = 0; aTirer = 0; totalCeTour = 0; ligneHisto = null; joueurActuel = 0;
   const c = $("carteNormale");
   c.className = "carte grande dos";
   delete c.dataset.src;
@@ -779,8 +1076,68 @@ function nouvellePartie() {
   $("legende").textContent = "";
   $("tirees").innerHTML = "";
   $("historique").innerHTML = '<li class="vide">Aucun tour joué</li>';
+  majBadges();
   majInterface();
 }
+
+/* ---- Écran de départ : choix des joueurs ---- */
+function nomsSauvegardes() {
+  try {
+    const v = JSON.parse(localStorage.getItem("cartes-joueurs"));
+    if (Array.isArray(v) && v.length >= MIN_JOUEURS) return v.slice(0, MAX_JOUEURS);
+  } catch (e) {}
+  return ["", ""];
+}
+
+function valeursSaisies() {
+  return [...$("listeJoueurs").querySelectorAll("input")].map(i => i.value);
+}
+
+function dessinerListe(valeurs) {
+  const ol = $("listeJoueurs");
+  ol.innerHTML = "";
+  valeurs.forEach((v, i) => {
+    const li = document.createElement("li");
+    const input = document.createElement("input");
+    input.type = "text";
+    input.maxLength = 16;
+    input.value = v;
+    input.placeholder = "Joueur " + (i + 1);
+    input.setAttribute("aria-label", "Nom du joueur " + (i + 1));
+    input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); commencer(); } });
+    const x = document.createElement("button");
+    x.className = "retirer";
+    x.textContent = "×";
+    x.setAttribute("aria-label", "Retirer le joueur " + (i + 1));
+    x.disabled = valeurs.length <= MIN_JOUEURS;
+    x.onclick = () => { const vals = valeursSaisies(); vals.splice(i, 1); dessinerListe(vals); };
+    li.append(input, x);
+    ol.appendChild(li);
+  });
+  $("ajouterJoueur").disabled = valeurs.length >= MAX_JOUEURS;
+}
+
+$("ajouterJoueur").onclick = () => {
+  const vals = valeursSaisies();
+  if (vals.length >= MAX_JOUEURS) return;
+  vals.push("");
+  dessinerListe(vals);
+  const inputs = $("listeJoueurs").querySelectorAll("input");
+  inputs[inputs.length - 1].focus();
+};
+
+function ouvrirAccueil() {
+  dessinerListe(joueurs.length ? joueurs.slice() : nomsSauvegardes());
+  $("accueil").hidden = false;
+}
+
+function commencer() {
+  joueurs = valeursSaisies().map((v, i) => v.trim() || "Joueur " + (i + 1));
+  try { localStorage.setItem("cartes-joueurs", JSON.stringify(joueurs)); } catch (e) {}
+  $("accueil").hidden = true;
+  nouvellePartie();
+}
+$("commencer").onclick = commencer;
 
 /* ---- Zoom ---- */
 function fermerZoom() { $("zoom").hidden = true; }
@@ -790,11 +1147,11 @@ document.addEventListener("click", e => {
 });
 $("zoom").onclick = fermerZoom;
 
-
 /* ---- Règles / Infos ---- */
 function ouvrirRegles() { $("regles").hidden = false; $("fermerRegles").focus(); }
-function fermerRegles() { $("regles").hidden = true; $("ouvrirRegles").focus(); }
+function fermerRegles() { $("regles").hidden = true; }
 $("ouvrirRegles").onclick = ouvrirRegles;
+$("voirRegles").onclick = ouvrirRegles;
 $("fermerRegles").onclick = fermerRegles;
 $("regles").addEventListener("click", e => { if (e.target.id === "regles") fermerRegles(); });
 document.querySelectorAll(".onglet").forEach(o => {
@@ -810,11 +1167,13 @@ document.querySelectorAll(".onglet").forEach(o => {
 /* ---- Raccourcis clavier (PC) ---- */
 document.addEventListener("keydown", e => {
   if (!$("regles").hidden) { if (e.key === "Escape") fermerRegles(); return; }
+  if (!$("accueil").hidden) return;
+  if (!$("modale").hidden) { if (e.key === "Escape") fermerModale(); return; }
   if (!$("zoom").hidden) { fermerZoom(); return; }
   if (e.key === " " || e.key === "Enter") {
     if (e.key === "Enter" && document.activeElement && document.activeElement.tagName === "BUTTON") return;
     e.preventDefault();
-    tirerNormale();
+    if (!$("action").disabled) $("action").click();
     return;
   }
   const i = ["1", "2", "3"].indexOf(e.key);
@@ -836,10 +1195,13 @@ PENALITES.forEach((p, i) => {
   b.onclick = () => tirerPenalite(p);
   $("choix").appendChild(b);
 });
-$("action").onclick = tirerNormale;
-$("reset").onclick = () => { if (tour === 0 || confirm("Recommencer une nouvelle partie ?")) nouvellePartie(); };
+$("reset").onclick = () => {
+  if (tour === 0 || confirm("Recommencer une nouvelle partie ?")) ouvrirAccueil();
+};
 
+joueurs = nomsSauvegardes().map((v, i) => v || "Joueur " + (i + 1));
 nouvellePartie();
+dessinerListe(nomsSauvegardes());
 </script>
 </body>
 </html>
